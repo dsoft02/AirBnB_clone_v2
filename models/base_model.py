@@ -19,10 +19,20 @@ class BaseModel:
 		self.id = str(uuid4())
 		self.created_at = datetime.today()
 		self.updated_at = datetime.today()
+		if len(kwargs) != 0:
+			for key, val in kwargs.items():
+				if key == "created_at" or key == "updated_at":
+					self.__dict__[key] = datetime.strptime(val, tform)
+				else:
+					self.__dict__[key] = val
+		else:
+			models.storage.new(self)
+
 
 	def save(self):
 		"""Updates updated_at to the current day"""
 		self.updated_at = datetime.today()
+		models.storage.save()
 
 	def to_dict(self):
 		"""Returns a dictionary of the BaseModel instance.
@@ -39,5 +49,3 @@ class BaseModel:
 		"""Return the print/str representation of the BaseModel instance."""
 		class_name = self.__class__.__name__
 		return "[{}] ({}) {}".format(class_name, self.id, self.__dict__)
-
-
