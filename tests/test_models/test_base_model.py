@@ -7,17 +7,73 @@ Unittest classes:
     TestBaseModel_to_dict
 """
 import os
+from os import getenv
 import models
 import unittest
 from datetime import datetime
 from time import sleep
 from uuid import UUID
 import json
+import pep8
+import MySQLdb
+from models import storage
 from models.base_model import BaseModel
 
 
 class TestBaseModel_instantiation(unittest.TestCase):
     """Unittests for testing instantiation of the BaseModel class."""
+
+    @classmethod
+    def setUpClass(cls):
+        """setup for the test"""
+        cls.base = BaseModel()
+        cls.base.name = "BaseModel"
+        cls.base.num = 20
+        if getenv("HBNB_TYPE_STORAGE") == "db":
+            cls.db = MySQLdb.connect(getenv("HBNB_MYSQL_HOST"),
+                                     getenv("HBNB_MYSQL_USER"),
+                                     getenv("HBNB_MYSQL_PWD"),
+                                     getenv("HBNB_MYSQL_DB"))
+            cls.cursor = cls.db.cursor()
+
+    @classmethod
+    def teardown(cls):
+        """at the end of the test this will tear it down"""
+        del cls.base
+        if getenv("HBNB_TYPE_STORAGE") == "db":
+            self.db.close()
+
+    def tearDown(self):
+        """teardown"""
+        try:
+            os.remove("file.json")
+        except Exception:
+            pass
+
+    def test_pep8_BaseModel(self):
+        """Testing for pep8"""
+        style = pep8.StyleGuide(quiet=True)
+        p = style.check_files(['models/base_model.py'])
+        self.assertEqual(p.total_errors, 0, "fix pep8")
+
+    def test_checking_for_docstring_BaseModel(self):
+        """checking for docstrings"""
+        self.assertIsNotNone(BaseModel.__doc__)
+        self.assertIsNotNone(BaseModel.__init__.__doc__)
+        self.assertIsNotNone(BaseModel.__str__.__doc__)
+        self.assertIsNotNone(BaseModel.save.__doc__)
+        self.assertIsNotNone(BaseModel.to_dict.__doc__)
+
+    def test_method_BaseModel(self):
+        """chekcing if Basemodel have methods"""
+        self.assertTrue(hasattr(BaseModel, "__init__"))
+        self.assertTrue(hasattr(BaseModel, "save"))
+        self.assertTrue(hasattr(BaseModel, "to_dict"))
+        self.assertTrue(hasattr(BaseModel, "delete"))
+
+    def test_init_BaseModel(self):
+        """test if the base is an type BaseModel"""
+        self.assertTrue(isinstance(self.base, BaseModel))
 
     def test_no_args_instantiates(self):
         self.assertEqual(BaseModel, type(BaseModel()))
@@ -109,6 +165,8 @@ class TestBaseModel_save(unittest.TestCase):
         except IOError:
             pass
 
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") == 'db', "can't run if\
+                     storage is set to file")
     def test_one_save(self):
         bm = BaseModel()
         sleep(0.05)
@@ -116,6 +174,8 @@ class TestBaseModel_save(unittest.TestCase):
         bm.save()
         self.assertLess(first_updated_at, bm.updated_at)
 
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") == 'db', "can't run if\
+                     storage is set to file")
     def test_two_saves(self):
         bm = BaseModel()
         sleep(0.05)
@@ -127,11 +187,15 @@ class TestBaseModel_save(unittest.TestCase):
         bm.save()
         self.assertLess(second_updated_at, bm.updated_at)
 
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") == 'db', "can't run if\
+                     storage is set to file")
     def test_save_with_arg(self):
         bm = BaseModel()
         with self.assertRaises(TypeError):
             bm.save(None)
 
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") == 'db', "can't run if\
+                     storage is set to file")
     def test_save_updates_file(self):
         bm = BaseModel()
         bm.save()
