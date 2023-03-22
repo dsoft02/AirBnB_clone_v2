@@ -11,6 +11,7 @@ import models
 import unittest
 from datetime import datetime
 from time import sleep
+from models.base_model import BaseModel
 from models.amenity import Amenity
 
 
@@ -19,6 +20,21 @@ class TestAmenity_instantiation(unittest.TestCase):
 
     def test_no_args_instantiates(self):
         self.assertEqual(Amenity, type(Amenity()))
+
+    def test_amenity_inherits_from_BaseModel(self):
+        self.assertIsInstance(self.amenity, BaseModel)
+
+    def test_amenity_has_name_attribute(self):
+        self.assertTrue(hasattr(self.amenity, "name"))
+        self.assertIsInstance(self.amenity.name, str)
+
+    def test_instantiation(self):
+        amenity = Amenity()
+        self.assertIsInstance(amenity, Amenity)
+        self.assertIsInstance(amenity, BaseModel)
+
+    def test_amenity_name_attribute_default(self):
+        self.assertEqual(self.amenity.name, "")
 
     def test_new_instance_stored_in_objects(self):
         self.assertIn(Amenity(), models.storage.all().values())
@@ -184,7 +200,6 @@ class TestAmenity_to_dict(unittest.TestCase):
         am = Amenity()
         with self.assertRaises(TypeError):
             am.to_dict(None)
-
 
 if __name__ == "__main__":
     unittest.main()
