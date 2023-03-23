@@ -33,7 +33,7 @@ class BaseModel:
                 if key == "created_at" or key == "updated_at":
                     self.__dict__[key] = datetime.strptime(val, tform)
                 else:
-                    self.__dict__[key] = val
+                    self.__dict__[key] = str(val)
             del kwargs['__class__']
             self.__dict__.update(kwargs)
         
