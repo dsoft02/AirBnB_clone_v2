@@ -1,39 +1,30 @@
 #!/usr/bin/python3
+"""Start web application with two routings
 """
-flask model
-"""
-from flask import Flask, render_template
+
 from models import storage
 from models.state import State
+from flask import Flask, render_template
 app = Flask(__name__)
-storage.all()
+
+
+@app.route('/states')
+@app.route('/states/<id>')
+def states_list(id=None):
+    """Render template with states
+    """
+    path = '9-states.html'
+    states = storage.all(State)
+    return render_template(path, states=states, id=id)
 
 
 @app.teardown_appcontext
-def teardown_data(self):
-    """
-        refrech data
+def app_teardown(arg=None):
+    """Clean-up session
     """
     storage.close()
 
 
-@app.route('/states', strict_slashes=False)
-@app.route("/states/<id>", strict_slashes=False)
-def states_id(id=None):
-    """
-        list state by id if found
-    """
-    info = []
-    states = storage.all(State)
-    if id is None:
-        for k in states:
-            info.append(states[k])
-    else:
-        id = 'State.' + id
-        info = states.get(id)
-    return render_template('9-states.html', states=info, id=id)
-    return render_template('9-states.html', state=id)
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
+    app.url_map.strict_slashes = False
     app.run(host='0.0.0.0', port=5000)
